@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Text to Tree Displayer</title>
+    <title>Tree Viewer</title>
     <style>
         * {
             margin: 0;
@@ -19,7 +19,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 900px;
             margin: 0 auto;
         }
 
@@ -31,71 +31,62 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .panel {
+        .controls {
             background: white;
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
         }
 
-        .panel h2 {
-            color: #333;
+        .control-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
             margin-bottom: 15px;
-            font-size: 1.3em;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 10px;
         }
 
-        textarea {
-            width: 100%;
-            height: 300px;
-            padding: 12px;
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            color: #333;
+            font-weight: bold;
+            min-width: 120px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px 15px;
             border: 2px solid #ddd;
             border-radius: 5px;
-            font-family: 'Courier New', monospace;
             font-size: 14px;
-            resize: vertical;
             transition: border-color 0.3s;
         }
 
-        textarea:focus {
+        input[type="text"]:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
         }
 
-        #treeOutput {
-            width: 100%;
-            height: 300px;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            overflow: auto;
-            background: #f9f9f9;
-            white-space: pre;
-            line-height: 1.6;
+        input[type="range"] {
+            flex: 1;
+            min-width: 200px;
         }
 
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            flex-wrap: wrap;
+        .slider-value {
+            color: #667eea;
+            font-weight: bold;
+            min-width: 60px;
+            text-align: right;
         }
 
         button {
-            flex: 1;
-            min-width: 100px;
-            padding: 12px 20px;
+            padding: 10px 20px;
             background: #667eea;
             color: white;
             border: none;
@@ -116,275 +107,380 @@
             transform: translateY(0);
         }
 
-        .copy-btn {
-            background: #4CAF50;
-        }
-
-        .copy-btn:hover {
-            background: #45a049;
-        }
-
-        .clear-btn {
-            background: #f44336;
-        }
-
-        .clear-btn:hover {
-            background: #da190b;
-        }
-
-        .instructions {
+        .tree-panel {
             background: white;
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-
-        .instructions h2 {
-            color: #333;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 10px;
-        }
-
-        .instructions p {
-            color: #555;
-            line-height: 1.8;
-            margin-bottom: 12px;
-        }
-
-        .example {
-            background: #f5f5f5;
-            padding: 15px;
-            border-left: 4px solid #667eea;
-            margin-top: 15px;
-            border-radius: 3px;
             font-family: 'Courier New', monospace;
-            font-size: 13px;
-            overflow-x: auto;
+            line-height: 1.8;
+            color: #333;
+            max-height: 70vh;
+            overflow-y: auto;
         }
 
-        .example strong {
-            color: #333;
-            display: block;
-            margin-bottom: 10px;
+        .tree-node {
+            display: flex;
+            align-items: flex-start;
+            margin: 5px 0;
+            transition: background-color 0.2s;
+            padding: 5px;
+            border-radius: 3px;
+        }
+
+        .tree-node:hover {
+            background-color: #f5f5f5;
+        }
+
+        .tree-node.hidden {
+            display: none;
+        }
+
+        .tree-node.highlight {
+            background-color: #ffeb3b;
+        }
+
+        .toggle-btn {
+            width: 20px;
+            height: 20px;
+            min-width: 20px;
+            padding: 0;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 8px;
+            flex-shrink: 0;
+        }
+
+        .toggle-btn:hover {
+            background: #764ba2;
+        }
+
+        .toggle-btn.no-children {
+            visibility: hidden;
+            cursor: default;
+        }
+
+        .tree-content {
+            flex: 1;
+            word-break: break-word;
+        }
+
+        .children {
+            margin-left: 20px;
+        }
+
+        .children.hidden {
+            display: none;
+        }
+
+        .search-highlight {
+            background-color: #ffeb3b;
+            font-weight: bold;
         }
 
         @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-
             h1 {
                 font-size: 1.8em;
             }
 
-            textarea, #treeOutput {
-                height: 250px;
+            .control-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            label {
+                min-width: auto;
+            }
+
+            input[type="text"],
+            input[type="range"] {
+                min-width: auto;
+            }
+
+            .slider-value {
+                text-align: left;
             }
         }
 
-        .status {
-            margin-top: 10px;
-            padding: 10px;
-            border-radius: 5px;
-            display: none;
-            font-size: 14px;
-        }
-
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-            display: block;
-        }
-
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-            display: block;
+        .highlight-match {
+            background-color: #ffeb3b;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🌳 Text to Tree Displayer</h1>
+        <h1>Tree Viewer</h1>
 
-        <div class="main-content">
-            <div class="panel">
-                <h2>Input Text</h2>
-                <textarea id="textInput" placeholder="Paste your text here or use the examples below..."></textarea>
-                <div class="button-group">
-                    <button onclick="convertToTree()">Convert to Tree</button>
-                    <button class="clear-btn" onclick="clearInput()">Clear Input</button>
-                </div>
-                <div id="inputStatus" class="status"></div>
+        <div class="controls">
+            <div class="control-group">
+                <label for="searchInput">Search:</label>
+                <input type="text" id="searchInput" placeholder="Type to search (Ctrl+F)...">
+                <button onclick="clearSearch()">Clear</button>
             </div>
-
-            <div class="panel">
-                <h2>Tree Output</h2>
-                <div id="treeOutput"></div>
-                <div class="button-group">
-                    <button class="copy-btn" onclick="copyToClipboard()">Copy Output</button>
-                    <button class="clear-btn" onclick="clearOutput()">Clear Output</button>
-                </div>
-                <div id="outputStatus" class="status"></div>
+            <div class="control-group">
+                <label for="depthSlider">Show Details:</label>
+                <input type="range" id="depthSlider" min="0" max="6" value="6">
+                <span class="slider-value"><span id="depthValue">All</span></span>
+            </div>
+            <div class="control-group">
+                <button onclick="collapseAll()">Collapse All</button>
+                <button onclick="expandAll()">Expand All</button>
+                <button onclick="resetTree()">Reset</button>
             </div>
         </div>
 
-        <div class="instructions">
-            <h2>How to Use</h2>
-            <p><strong>Format your text with indentation:</strong> The indentation level determines the tree structure. Each level of indentation creates a nested branch.</p>
-
-            <p><strong>Example 1 - Simple List:</strong></p>
-            <div class="example">
-                <strong>Input:</strong>
-Project
-  Frontend
-    React
-    Vue
-  Backend
-    Node.js
-    Python
-            </div>
-
-            <p><strong>Example 2 - File Structure:</strong></p>
-            <div class="example">
-                <strong>Input:</strong>
-src/
-  components/
-    Button.js
-    Modal.js
-  utils/
-    helpers.js
-  index.js
-public/
-  index.html
-            </div>
-
-            <p><strong>Example 3 - Mixed Content:</strong></p>
-            <div class="example">
-                <strong>Input:</strong>
-Company
-  Engineering
-    Frontend Team
-      Alice
-      Bob
-    Backend Team
-      Charlie
-  Sales
-    John
-    Jane
-            </div>
-
-            <p><strong>Tips:</strong></p>
-            <ul style="margin-left: 20px; color: #555; line-height: 1.8;">
-                <li>Use consistent indentation (spaces or tabs)</li>
-                <li>Each new line becomes a node in the tree</li>
-                <li>Deeper indentation = deeper nesting</li>
-                <li>Works with any text format</li>
-            </ul>
-        </div>
+        <div class="tree-panel" id="treePanel"></div>
     </div>
 
     <script>
-        function convertToTree() {
-            const input = document.getElementById('textInput').value;
-            const outputDiv = document.getElementById('treeOutput');
-            const statusDiv = document.getElementById('outputStatus');
+        const treeData = {
+            name: "Achilles",
+            children: [
+                {
+                    name: "Firestrike",
+                    children: [
+                        { name: "Exodus" },
+                        { name: "Leerk" },
+                        { name: "redhorseofthewest" },
+                        { name: "Villox_veez" },
+                        { name: "whitefire2006e" },
+                        {
+                            name: "xqGhost",
+                            children: [
+                                {
+                                    name: "Thefurienocturne",
+                                    children: [
+                                        { name: "CaptainBHM" },
+                                        { name: "Cookie" },
+                                        { name: "IcyFlex" },
+                                        { name: "Mercy_Gzz200" },
+                                        { name: "Vik" }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                { name: "Sec_Freezy" },
+                {
+                    name: "Unit",
+                    children: [
+                        {
+                            name: "Lodiani",
+                            children: [
+                                { name: "Joker" }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        };
 
-            if (!input.trim()) {
-                showStatus(statusDiv, 'Please enter some text to convert', 'error');
-                outputDiv.textContent = '';
-                return;
-            }
+        const acroxityData = {
+            name: "Acroxity",
+            children: [
+                { name: "Castoff" },
+                { name: "EAsportlollol" }
+            ]
+        };
 
-            try {
-                const tree = buildTree(input);
-                outputDiv.textContent = tree;
-                showStatus(statusDiv, 'Tree generated successfully!', 'success');
-            } catch (error) {
-                showStatus(statusDiv, 'Error: ' + error.message, 'error');
-                outputDiv.textContent = '';
+        let maxDepth = 0;
+        let expandedNodes = new Set();
+        let searchTerm = "";
+
+        function getMaxDepth(node, depth = 0) {
+            maxDepth = Math.max(maxDepth, depth);
+            if (node.children && node.children.length > 0) {
+                node.children.forEach(child => getMaxDepth(child, depth + 1));
             }
         }
 
-        function buildTree(text) {
-            const lines = text.split('\n').filter(line => line.trim());
-            if (lines.length === 0) return '';
+        function createNodeId(path) {
+            return "node-" + path.join("-");
+        }
 
-            const nodes = lines.map((line, index) => {
-                const leadingSpaces = line.search(/\S/);
-                return {
-                    text: line.trim(),
-                    level: leadingSpaces >= 0 ? Math.floor(leadingSpaces / 2) : 0,
-                    originalIndex: index
+        function renderTree(node, container, path = [], maxShowDepth = 6) {
+            const nodeId = createNodeId(path);
+            const nodeDiv = document.createElement("div");
+            nodeDiv.className = "tree-node";
+            nodeDiv.id = nodeId;
+            nodeDiv.setAttribute("data-depth", path.length);
+            nodeDiv.setAttribute("data-path", path.join("/"));
+            nodeDiv.setAttribute("data-name", node.name.toLowerCase());
+
+            const hasChildren = node.children && node.children.length > 0;
+            const isExpanded = expandedNodes.has(nodeId);
+            const belowMaxDepth = path.length >= maxShowDepth;
+
+            if (belowMaxDepth) {
+                nodeDiv.classList.add("hidden");
+            }
+
+            // Toggle button
+            const toggleBtn = document.createElement("button");
+            toggleBtn.className = "toggle-btn";
+            if (!hasChildren) {
+                toggleBtn.classList.add("no-children");
+            } else {
+                toggleBtn.textContent = isExpanded ? "−" : "+";
+                toggleBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    toggleNode(nodeId, node, path);
                 };
-            });
+            }
+            nodeDiv.appendChild(toggleBtn);
 
-            let treeOutput = '';
-            
-            for (let i = 0; i < nodes.length; i++) {
-                const node = nodes[i];
-                const nextNode = i + 1 < nodes.length ? nodes[i + 1] : null;
-                const isLast = !nextNode || nextNode.level <= node.level;
+            // Content
+            const content = document.createElement("div");
+            content.className = "tree-content";
+            content.textContent = node.name;
+            nodeDiv.appendChild(content);
 
-                // Build the prefix with tree characters
-                let prefix = '';
-                for (let j = 0; j < node.level; j++) {
-                    prefix += '│   ';
+            container.appendChild(nodeDiv);
+
+            // Children
+            if (hasChildren) {
+                const childrenDiv = document.createElement("div");
+                childrenDiv.className = "children";
+                childrenDiv.id = nodeId + "-children";
+
+                if (!isExpanded) {
+                    childrenDiv.classList.add("hidden");
                 }
 
-                // Add the branch character
-                prefix += isLast ? '└── ' : '├── ';
+                node.children.forEach((child, index) => {
+                    renderTree(child, childrenDiv, [...path, index], maxShowDepth);
+                });
 
-                treeOutput += prefix + node.text + '\n';
+                container.appendChild(childrenDiv);
             }
-
-            return treeOutput;
         }
 
-        function copyToClipboard() {
-            const outputDiv = document.getElementById('treeOutput');
-            const text = outputDiv.textContent;
+        function renderFullTree() {
+            const panel = document.getElementById("treePanel");
+            panel.innerHTML = "";
+            expandedNodes.clear();
 
-            if (!text.trim()) {
-                showStatus(document.getElementById('outputStatus'), 'Nothing to copy', 'error');
-                return;
+            const maxShowDepth = parseInt(document.getElementById("depthSlider").value);
+
+            const rootContainer = document.createElement("div");
+            renderTree(treeData, rootContainer, [], maxShowDepth);
+            panel.appendChild(rootContainer);
+
+            const acroxityContainer = document.createElement("div");
+            acroxityContainer.style.marginTop = "30px";
+            renderTree(acroxityData, acroxityContainer, [], maxShowDepth);
+            panel.appendChild(acroxityContainer);
+
+            applySearch();
+        }
+
+        function toggleNode(nodeId, node, path) {
+            if (expandedNodes.has(nodeId)) {
+                expandedNodes.delete(nodeId);
+            } else {
+                expandedNodes.add(nodeId);
             }
-
-            navigator.clipboard.writeText(text).then(() => {
-                showStatus(document.getElementById('outputStatus'), 'Copied to clipboard!', 'success');
-            }).catch(err => {
-                showStatus(document.getElementById('outputStatus'), 'Failed to copy', 'error');
-            });
+            renderFullTree();
         }
 
-        function clearInput() {
-            document.getElementById('textInput').value = '';
-            document.getElementById('inputStatus').style.display = 'none';
+        function collapseAll() {
+            expandedNodes.clear();
+            renderFullTree();
         }
 
-        function clearOutput() {
-            document.getElementById('treeOutput').textContent = '';
-            document.getElementById('outputStatus').style.display = 'none';
-        }
-
-        function showStatus(element, message, type) {
-            element.textContent = message;
-            element.className = 'status ' + type;
-            setTimeout(() => {
-                element.style.display = 'none';
-            }, 3000);
-        }
-
-        // Add example functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            // Auto-convert as user types (optional)
-            document.getElementById('textInput').addEventListener('keyup', function(e) {
-                if (e.ctrlKey && e.key === 'Enter') {
-                    convertToTree();
+        function expandAll() {
+            const panel = document.getElementById("treePanel");
+            const nodes = panel.querySelectorAll(".tree-node");
+            nodes.forEach(node => {
+                const nodeId = node.id;
+                if (node.querySelector(".toggle-btn:not(.no-children)")) {
+                    expandedNodes.add(nodeId);
                 }
             });
+            renderFullTree();
+        }
+
+        function resetTree() {
+            document.getElementById("searchInput").value = "";
+            document.getElementById("depthSlider").value = maxDepth;
+            document.getElementById("depthValue").textContent = "All";
+            expandedNodes.clear();
+            searchTerm = "";
+            renderFullTree();
+        }
+
+        function applySearch() {
+            const searchValue = document.getElementById("searchInput").value.toLowerCase().trim();
+            const nodes = document.querySelectorAll(".tree-node");
+
+            nodes.forEach(node => {
+                const nodeName = node.getAttribute("data-name");
+                const matches = searchValue && nodeName.includes(searchValue);
+
+                if (matches) {
+                    node.classList.add("highlight");
+                    // Expand all parents
+                    let parent = node.parentElement;
+                    while (parent) {
+                        const parentNode = parent.closest(".tree-node");
+                        if (parentNode) {
+                            expandedNodes.add(parentNode.id);
+                            const childrenDiv = document.getElementById(parentNode.id + "-children");
+                            if (childrenDiv) {
+                                childrenDiv.classList.remove("hidden");
+                            }
+                        }
+                        parent = parent.parentElement;
+                    }
+                } else {
+                    node.classList.remove("highlight");
+                }
+            });
+
+            // Re-render to show expanded nodes
+            renderFullTree();
+        }
+
+        function clearSearch() {
+            document.getElementById("searchInput").value = "";
+            applySearch();
+        }
+
+        document.getElementById("searchInput").addEventListener("input", applySearch);
+
+        document.getElementById("depthSlider").addEventListener("input", (e) => {
+            const value = parseInt(e.target.value);
+            if (value === maxDepth) {
+                document.getElementById("depthValue").textContent = "All";
+            } else {
+                document.getElementById("depthValue").textContent = value;
+            }
+            expandedNodes.clear();
+            renderFullTree();
         });
+
+        // Ctrl+F focus
+        document.addEventListener("keydown", (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === "f") {
+                e.preventDefault();
+                document.getElementById("searchInput").focus();
+            }
+        });
+
+        // Initialize
+        getMaxDepth(treeData);
+        getMaxDepth(acroxityData, 0);
+        document.getElementById("depthSlider").max = maxDepth;
+        renderFullTree();
     </script>
 </body>
 </html>

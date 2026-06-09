@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Tree Displayer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .panel h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+
+        #treeOutput {
+            width: 100%;
+            height: 300px;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow: auto;
+            background: #f9f9f9;
+            white-space: pre;
+            line-height: 1.6;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            flex: 1;
+            min-width: 100px;
+            padding: 12px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .copy-btn {
+            background: #4CAF50;
+        }
+
+        .copy-btn:hover {
+            background: #45a049;
+        }
+
+        .clear-btn {
+            background: #f44336;
+        }
+
+        .clear-btn:hover {
+            background: #da190b;
+        }
+
+        .instructions {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .instructions h2 {
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .instructions p {
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 12px;
+        }
+
+        .example {
+            background: #f5f5f5;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+            margin-top: 15px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+        }
+
+        .example strong {
+            color: #333;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            textarea, #treeOutput {
+                height: 250px;
+            }
+        }
+
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+            font-size: 14px;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌳 Text to Tree Displayer</h1>
+
+        <div class="main-content">
+            <div class="panel">
+                <h2>Input Text</h2>
+                <textarea id="textInput" placeholder="Paste your text here or use the examples below..."></textarea>
+                <div class="button-group">
+                    <button onclick="convertToTree()">Convert to Tree</button>
+                    <button class="clear-btn" onclick="clearInput()">Clear Input</button>
+                </div>
+                <div id="inputStatus" class="status"></div>
+            </div>
+
+            <div class="panel">
+                <h2>Tree Output</h2>
+                <div id="treeOutput"></div>
+                <div class="button-group">
+                    <button class="copy-btn" onclick="copyToClipboard()">Copy Output</button>
+                    <button class="clear-btn" onclick="clearOutput()">Clear Output</button>
+                </div>
+                <div id="outputStatus" class="status"></div>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h2>How to Use</h2>
+            <p><strong>Format your text with indentation:</strong> The indentation level determines the tree structure. Each level of indentation creates a nested branch.</p>
+
+            <p><strong>Example 1 - Simple List:</strong></p>
+            <div class="example">
+                <strong>Input:</strong>
+Project
+  Frontend
+    React
+    Vue
+  Backend
+    Node.js
+    Python
+            </div>
+
+            <p><strong>Example 2 - File Structure:</strong></p>
+            <div class="example">
+                <strong>Input:</strong>
+src/
+  components/
+    Button.js
+    Modal.js
+  utils/
+    helpers.js
+  index.js
+public/
+  index.html
+            </div>
+
+            <p><strong>Example 3 - Mixed Content:</strong></p>
+            <div class="example">
+                <strong>Input:</strong>
+Company
+  Engineering
+    Frontend Team
+      Alice
+      Bob
+    Backend Team
+      Charlie
+  Sales
+    John
+    Jane
+            </div>
+
+            <p><strong>Tips:</strong></p>
+            <ul style="margin-left: 20px; color: #555; line-height: 1.8;">
+                <li>Use consistent indentation (spaces or tabs)</li>
+                <li>Each new line becomes a node in the tree</li>
+                <li>Deeper indentation = deeper nesting</li>
+                <li>Works with any text format</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function convertToTree() {
+            const input = document.getElementById('textInput').value;
+            const outputDiv = document.getElementById('treeOutput');
+            const statusDiv = document.getElementById('outputStatus');
+
+            if (!input.trim()) {
+                showStatus(statusDiv, 'Please enter some text to convert', 'error');
+                outputDiv.textContent = '';
+                return;
+            }
+
+            try {
+                const tree = buildTree(input);
+                outputDiv.textContent = tree;
+                showStatus(statusDiv, 'Tree generated successfully!', 'success');
+            } catch (error) {
+                showStatus(statusDiv, 'Error: ' + error.message, 'error');
+                outputDiv.textContent = '';
+            }
+        }
+
+        function buildTree(text) {
+            const lines = text.split('\n').filter(line => line.trim());
+            if (lines.length === 0) return '';
+
+            const nodes = lines.map((line, index) => {
+                const leadingSpaces = line.search(/\S/);
+                return {
+                    text: line.trim(),
+                    level: leadingSpaces >= 0 ? Math.floor(leadingSpaces / 2) : 0,
+                    originalIndex: index
+                };
+            });
+
+            let treeOutput = '';
+            
+            for (let i = 0; i < nodes.length; i++) {
+                const node = nodes[i];
+                const nextNode = i + 1 < nodes.length ? nodes[i + 1] : null;
+                const isLast = !nextNode || nextNode.level <= node.level;
+
+                // Build the prefix with tree characters
+                let prefix = '';
+                for (let j = 0; j < node.level; j++) {
+                    prefix += '│   ';
+                }
+
+                // Add the branch character
+                prefix += isLast ? '└── ' : '├── ';
+
+                treeOutput += prefix + node.text + '\n';
+            }
+
+            return treeOutput;
+        }
+
+        function copyToClipboard() {
+            const outputDiv = document.getElementById('treeOutput');
+            const text = outputDiv.textContent;
+
+            if (!text.trim()) {
+                showStatus(document.getElementById('outputStatus'), 'Nothing to copy', 'error');
+                return;
+            }
+
+            navigator.clipboard.writeText(text).then(() => {
+                showStatus(document.getElementById('outputStatus'), 'Copied to clipboard!', 'success');
+            }).catch(err => {
+                showStatus(document.getElementById('outputStatus'), 'Failed to copy', 'error');
+            });
+        }
+
+        function clearInput() {
+            document.getElementById('textInput').value = '';
+            document.getElementById('inputStatus').style.display = 'none';
+        }
+
+        function clearOutput() {
+            document.getElementById('treeOutput').textContent = '';
+            document.getElementById('outputStatus').style.display = 'none';
+        }
+
+        function showStatus(element, message, type) {
+            element.textContent = message;
+            element.className = 'status ' + type;
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 3000);
+        }
+
+        // Add example functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-convert as user types (optional)
+            document.getElementById('textInput').addEventListener('keyup', function(e) {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    convertToTree();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

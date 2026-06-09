@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tree Viewer</title>
+    <title>Mind Map Tree Viewer</title>
     <style>
         * {
             margin: 0;
@@ -13,234 +13,138 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+            background: #f5f7fa;
+            overflow: hidden;
+            height: 100vh;
         }
 
         .container {
-            max-width: 900px;
-            margin: 0 auto;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
         }
 
-        h1 {
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 2.5em;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            padding: 15px 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .header h1 {
+            font-size: 1.5em;
         }
 
         .controls {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            margin-bottom: 20px;
-        }
-
-        .control-group {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             flex-wrap: wrap;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .control-group:last-child {
-            margin-bottom: 0;
-        }
-
-        label {
-            color: #333;
-            font-weight: bold;
-            min-width: 120px;
-        }
-
-        input[type="text"] {
-            flex: 1;
-            min-width: 200px;
-            padding: 10px 15px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-            transition: border-color 0.3s;
-        }
-
-        input[type="text"]:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
-        }
-
-        input[type="range"] {
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .slider-value {
-            color: #667eea;
-            font-weight: bold;
-            min-width: 60px;
-            text-align: right;
         }
 
         button {
-            padding: 10px 20px;
-            background: #667eea;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
             color: white;
-            border: none;
+            border: 1px solid rgba(255,255,255,0.4);
             border-radius: 5px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
             transition: all 0.3s;
         }
 
         button:hover {
-            background: #764ba2;
+            background: rgba(255,255,255,0.3);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
         button:active {
             transform: translateY(0);
         }
 
-        .tree-panel {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            font-family: 'Courier New', monospace;
-            line-height: 1.8;
-            color: #333;
-            max-height: 70vh;
-            overflow-y: auto;
-        }
-
-        .tree-node {
-            display: flex;
-            align-items: flex-start;
-            margin: 5px 0;
-            transition: background-color 0.2s;
-            padding: 5px;
-            border-radius: 3px;
-        }
-
-        .tree-node:hover {
-            background-color: #f5f5f5;
-        }
-
-        .tree-node.hidden {
-            display: none;
-        }
-
-        .tree-node.highlight {
-            background-color: #ffeb3b;
-        }
-
-        .toggle-btn {
-            width: 20px;
-            height: 20px;
-            min-width: 20px;
-            padding: 0;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 8px;
-            flex-shrink: 0;
-        }
-
-        .toggle-btn:hover {
-            background: #764ba2;
-        }
-
-        .toggle-btn.no-children {
-            visibility: hidden;
-            cursor: default;
-        }
-
-        .tree-content {
+        .canvas-container {
             flex: 1;
-            word-break: break-word;
+            position: relative;
+            overflow: hidden;
+            background: #f5f7fa;
         }
 
-        .children {
-            margin-left: 20px;
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
         }
 
-        .children.hidden {
-            display: none;
+        .info-panel {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            max-width: 250px;
+            font-size: 13px;
+            color: #555;
         }
 
-        .search-highlight {
-            background-color: #ffeb3b;
-            font-weight: bold;
+        .info-panel h3 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .info-panel p {
+            line-height: 1.6;
         }
 
         @media (max-width: 768px) {
-            h1 {
-                font-size: 1.8em;
-            }
-
-            .control-group {
+            .header {
                 flex-direction: column;
-                align-items: stretch;
+                align-items: flex-start;
             }
 
-            label {
-                min-width: auto;
+            .controls {
+                width: 100%;
             }
 
-            input[type="text"],
-            input[type="range"] {
-                min-width: auto;
+            .info-panel {
+                display: none;
             }
-
-            .slider-value {
-                text-align: left;
-            }
-        }
-
-        .highlight-match {
-            background-color: #ffeb3b;
-            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Tree Viewer</h1>
-
-        <div class="controls">
-            <div class="control-group">
-                <label for="searchInput">Search:</label>
-                <input type="text" id="searchInput" placeholder="Type to search (Ctrl+F)...">
-                <button onclick="clearSearch()">Clear</button>
-            </div>
-            <div class="control-group">
-                <label for="depthSlider">Show Details:</label>
-                <input type="range" id="depthSlider" min="0" max="6" value="6">
-                <span class="slider-value"><span id="depthValue">All</span></span>
-            </div>
-            <div class="control-group">
-                <button onclick="collapseAll()">Collapse All</button>
-                <button onclick="expandAll()">Expand All</button>
-                <button onclick="resetTree()">Reset</button>
+        <div class="header">
+            <h1>Mind Map Tree Viewer</h1>
+            <div class="controls">
+                <button onclick="zoomIn()">Zoom +</button>
+                <button onclick="zoomOut()">Zoom -</button>
+                <button onclick="resetView()">Reset</button>
+                <button onclick="toggleLayout()">Layout</button>
             </div>
         </div>
-
-        <div class="tree-panel" id="treePanel"></div>
+        <div class="canvas-container">
+            <canvas id="canvas"></canvas>
+            <div class="info-panel">
+                <h3 id="selectedNode">Select a node</h3>
+                <p id="selectedInfo">Click on any node to see details</p>
+            </div>
+        </div>
     </div>
 
     <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Data
         const treeData = {
             name: "Achilles",
             children: [
@@ -292,195 +196,316 @@
             ]
         };
 
-        let maxDepth = 0;
-        let expandedNodes = new Set();
-        let searchTerm = "";
+        // State
+        let zoom = 1;
+        let panX = 0;
+        let panY = 0;
+        let isRadial = true;
+        let nodes = [];
+        let selectedNode = null;
+        let animationProgress = {};
 
-        function getMaxDepth(node, depth = 0) {
-            maxDepth = Math.max(maxDepth, depth);
-            if (node.children && node.children.length > 0) {
-                node.children.forEach(child => getMaxDepth(child, depth + 1));
-            }
+        // Colors
+        const colorScheme = [
+            '#667eea',
+            '#764ba2',
+            '#f093fb',
+            '#4facfe',
+            '#00f2fe',
+            '#43e97b',
+            '#fa709a'
+        ];
+
+        function getColor(depth) {
+            return colorScheme[depth % colorScheme.length];
         }
 
-        function createNodeId(path) {
-            return "node-" + path.join("-");
-        }
+        // Node class
+        class Node {
+            constructor(data, depth = 0, angle = 0, distance = 0, parent = null) {
+                this.data = data;
+                this.depth = depth;
+                this.angle = angle;
+                this.distance = distance;
+                this.parent = parent;
+                this.children = [];
+                this.expanded = true;
+                this.x = 0;
+                this.y = 0;
+                this.radius = 25;
+                this.fontSize = 12;
 
-        function renderTree(node, container, path = [], maxShowDepth = 6) {
-            const nodeId = createNodeId(path);
-            const nodeDiv = document.createElement("div");
-            nodeDiv.className = "tree-node";
-            nodeDiv.id = nodeId;
-            nodeDiv.setAttribute("data-depth", path.length);
-            nodeDiv.setAttribute("data-path", path.join("/"));
-            nodeDiv.setAttribute("data-name", node.name.toLowerCase());
-
-            const hasChildren = node.children && node.children.length > 0;
-            const isExpanded = expandedNodes.has(nodeId);
-            const belowMaxDepth = path.length >= maxShowDepth;
-
-            if (belowMaxDepth) {
-                nodeDiv.classList.add("hidden");
-            }
-
-            // Toggle button
-            const toggleBtn = document.createElement("button");
-            toggleBtn.className = "toggle-btn";
-            if (!hasChildren) {
-                toggleBtn.classList.add("no-children");
-            } else {
-                toggleBtn.textContent = isExpanded ? "−" : "+";
-                toggleBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    toggleNode(nodeId, node, path);
-                };
-            }
-            nodeDiv.appendChild(toggleBtn);
-
-            // Content
-            const content = document.createElement("div");
-            content.className = "tree-content";
-            content.textContent = node.name;
-            nodeDiv.appendChild(content);
-
-            container.appendChild(nodeDiv);
-
-            // Children
-            if (hasChildren) {
-                const childrenDiv = document.createElement("div");
-                childrenDiv.className = "children";
-                childrenDiv.id = nodeId + "-children";
-
-                if (!isExpanded) {
-                    childrenDiv.classList.add("hidden");
+                if (data.children) {
+                    data.children.forEach((child, i) => {
+                        const childNode = new Node(child, depth + 1, 0, 0, this);
+                        this.children.push(childNode);
+                    });
                 }
-
-                node.children.forEach((child, index) => {
-                    renderTree(child, childrenDiv, [...path, index], maxShowDepth);
-                });
-
-                container.appendChild(childrenDiv);
             }
-        }
 
-        function renderFullTree() {
-            const panel = document.getElementById("treePanel");
-            panel.innerHTML = "";
-            expandedNodes.clear();
-
-            const maxShowDepth = parseInt(document.getElementById("depthSlider").value);
-
-            const rootContainer = document.createElement("div");
-            renderTree(treeData, rootContainer, [], maxShowDepth);
-            panel.appendChild(rootContainer);
-
-            const acroxityContainer = document.createElement("div");
-            acroxityContainer.style.marginTop = "30px";
-            renderTree(acroxityData, acroxityContainer, [], maxShowDepth);
-            panel.appendChild(acroxityContainer);
-
-            applySearch();
-        }
-
-        function toggleNode(nodeId, node, path) {
-            if (expandedNodes.has(nodeId)) {
-                expandedNodes.delete(nodeId);
-            } else {
-                expandedNodes.add(nodeId);
-            }
-            renderFullTree();
-        }
-
-        function collapseAll() {
-            expandedNodes.clear();
-            renderFullTree();
-        }
-
-        function expandAll() {
-            const panel = document.getElementById("treePanel");
-            const nodes = panel.querySelectorAll(".tree-node");
-            nodes.forEach(node => {
-                const nodeId = node.id;
-                if (node.querySelector(".toggle-btn:not(.no-children)")) {
-                    expandedNodes.add(nodeId);
-                }
-            });
-            renderFullTree();
-        }
-
-        function resetTree() {
-            document.getElementById("searchInput").value = "";
-            document.getElementById("depthSlider").value = maxDepth;
-            document.getElementById("depthValue").textContent = "All";
-            expandedNodes.clear();
-            searchTerm = "";
-            renderFullTree();
-        }
-
-        function applySearch() {
-            const searchValue = document.getElementById("searchInput").value.toLowerCase().trim();
-            const nodes = document.querySelectorAll(".tree-node");
-
-            nodes.forEach(node => {
-                const nodeName = node.getAttribute("data-name");
-                const matches = searchValue && nodeName.includes(searchValue);
-
-                if (matches) {
-                    node.classList.add("highlight");
-                    // Expand all parents
-                    let parent = node.parentElement;
-                    while (parent) {
-                        const parentNode = parent.closest(".tree-node");
-                        if (parentNode) {
-                            expandedNodes.add(parentNode.id);
-                            const childrenDiv = document.getElementById(parentNode.id + "-children");
-                            if (childrenDiv) {
-                                childrenDiv.classList.remove("hidden");
-                            }
-                        }
-                        parent = parent.parentElement;
-                    }
+            updatePosition(centerX, centerY, isRadial) {
+                if (isRadial) {
+                    this.x = centerX + Math.cos(this.angle) * this.distance;
+                    this.y = centerY + Math.sin(this.angle) * this.distance;
                 } else {
-                    node.classList.remove("highlight");
+                    this.x = centerX + this.depth * 150;
+                    this.y = centerY + (this.getYOffset() - this.getTotalHeight() / 2);
+                }
+            }
+
+            getYOffset() {
+                if (!this.parent) return 0;
+                const siblings = this.parent.children;
+                const index = siblings.indexOf(this);
+                const spacing = 60;
+                return siblings.reduce((sum, sibling, i) => {
+                    if (i < index) return sum + sibling.getTotalHeight();
+                    return sum;
+                }, 0) + (spacing / 2);
+            }
+
+            getTotalHeight() {
+                if (!this.expanded || this.children.length === 0) return 60;
+                return this.children.reduce((sum, child) => sum + child.getTotalHeight(), 60);
+            }
+
+            toggle() {
+                this.expanded = !this.expanded;
+            }
+
+            getAllNodes() {
+                let result = [this];
+                if (this.expanded && this.children) {
+                    this.children.forEach(child => {
+                        result = result.concat(child.getAllNodes());
+                    });
+                }
+                return result;
+            }
+        }
+
+        // Initialize layout
+        function initializeLayout(root, centerX, centerY) {
+            root.x = centerX;
+            root.y = centerY;
+
+            if (!root.expanded || root.children.length === 0) return;
+
+            const childCount = root.children.length;
+            const angleStep = (Math.PI * 2) / childCount;
+            const distance = 120 + root.depth * 60;
+
+            root.children.forEach((child, i) => {
+                child.angle = angleStep * i;
+                child.distance = distance;
+                child.updatePosition(centerX, centerY, isRadial);
+                initializeLayout(child, child.x, child.y);
+            });
+        }
+
+        // Build complete layout
+        function buildLayout() {
+            nodes = [];
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+
+            const root1 = new Node(treeData);
+            const root2 = new Node(acroxityData);
+
+            initializeLayout(root1, centerX - 200, centerY);
+            initializeLayout(root2, centerX + 200, centerY);
+
+            nodes = root1.getAllNodes().concat(root2.getAllNodes());
+        }
+
+        // Rendering
+        function drawConnector(fromX, fromY, toX, toY, color) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = 0.3;
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+        }
+
+        function drawNode(node) {
+            const color = getColor(node.depth);
+            const radius = 20 + (node.children.length * 2);
+
+            // Draw shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.1)';
+            ctx.beginPath();
+            ctx.arc(node.x + 2, node.y + 2, radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw node circle
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw border
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Draw text
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${node.depth === 0 ? 14 : 12}px Segoe UI`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            const text = node.data.name;
+            const maxWidth = radius * 1.5;
+
+            if (ctx.measureText(text).width > maxWidth) {
+                const shortText = text.substring(0, Math.floor(text.length * 0.7)) + '...';
+                ctx.fillText(shortText, node.x, node.y);
+            } else {
+                ctx.fillText(text, node.x, node.y);
+            }
+
+            // Draw expand indicator
+            if (node.children.length > 0 && node.expanded) {
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.font = 'bold 16px Segoe UI';
+                ctx.fillText('−', node.x + radius - 8, node.y - radius + 8);
+            } else if (node.children.length > 0) {
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.font = 'bold 16px Segoe UI';
+                ctx.fillText('+', node.x + radius - 8, node.y - radius + 8);
+            }
+        }
+
+        function draw() {
+            // Clear canvas
+            ctx.fillStyle = '#f5f7fa';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.save();
+            ctx.translate(panX, panY);
+            ctx.scale(zoom, zoom);
+
+            // Draw connectors first
+            nodes.forEach(node => {
+                if (node.parent && node.expanded !== false) {
+                    const color = getColor(node.depth - 1);
+                    drawConnector(node.parent.x, node.parent.y, node.x, node.y, color);
                 }
             });
 
-            // Re-render to show expanded nodes
-            renderFullTree();
+            // Draw nodes
+            nodes.forEach(node => {
+                drawNode(node);
+            });
+
+            ctx.restore();
+
+            requestAnimationFrame(draw);
         }
 
-        function clearSearch() {
-            document.getElementById("searchInput").value = "";
-            applySearch();
+        // Event handling
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left - panX) / zoom;
+            const y = (e.clientY - rect.top - panY) / zoom;
+
+            nodes.forEach(node => {
+                const radius = 20 + (node.children.length * 2);
+                const dist = Math.sqrt((x - node.x) ** 2 + (y - node.y) ** 2);
+
+                if (dist < radius) {
+                    // Check if clicked on expand/collapse button
+                    if (node.children.length > 0) {
+                        const buttonX = node.x + radius - 8;
+                        const buttonY = node.y - radius + 8;
+                        if (Math.sqrt((x - buttonX) ** 2 + (y - buttonY) ** 2) < 8) {
+                            node.toggle();
+                            nodes = node.parent ? node.parent.parent ? node.parent.parent.getAllNodes() : node.parent.getAllNodes() : nodes.filter(n => n.depth === 0).flatMap(n => n.getAllNodes());
+                        }
+                    }
+
+                    selectedNode = node;
+                    document.getElementById('selectedNode').textContent = node.data.name;
+                    document.getElementById('selectedInfo').textContent = 
+                        `Depth: ${node.depth}\nChildren: ${node.children.length}\nExpanded: ${node.expanded ? 'Yes' : 'No'}`;
+                }
+            });
+        });
+
+        // Mouse wheel zoom
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+            zoom *= zoomFactor;
+            zoom = Math.max(0.3, Math.min(3, zoom));
+        });
+
+        // Pan
+        let isPanning = false;
+        let lastX = 0, lastY = 0;
+
+        canvas.addEventListener('mousedown', (e) => {
+            if (e.button === 2) {
+                isPanning = true;
+                lastX = e.clientX;
+                lastY = e.clientY;
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (isPanning) {
+                panX += e.clientX - lastX;
+                panY += e.clientY - lastY;
+                lastX = e.clientX;
+                lastY = e.clientY;
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            isPanning = false;
+        });
+
+        canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+        // Controls
+        function zoomIn() {
+            zoom *= 1.2;
+            zoom = Math.min(zoom, 3);
         }
 
-        document.getElementById("searchInput").addEventListener("input", applySearch);
+        function zoomOut() {
+            zoom /= 1.2;
+            zoom = Math.max(zoom, 0.3);
+        }
 
-        document.getElementById("depthSlider").addEventListener("input", (e) => {
-            const value = parseInt(e.target.value);
-            if (value === maxDepth) {
-                document.getElementById("depthValue").textContent = "All";
-            } else {
-                document.getElementById("depthValue").textContent = value;
-            }
-            expandedNodes.clear();
-            renderFullTree();
-        });
+        function resetView() {
+            zoom = 1;
+            panX = 0;
+            panY = 0;
+            isRadial = true;
+            buildLayout();
+        }
 
-        // Ctrl+F focus
-        document.addEventListener("keydown", (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === "f") {
-                e.preventDefault();
-                document.getElementById("searchInput").focus();
-            }
-        });
+        function toggleLayout() {
+            isRadial = !isRadial;
+            buildLayout();
+        }
 
         // Initialize
-        getMaxDepth(treeData);
-        getMaxDepth(acroxityData, 0);
-        document.getElementById("depthSlider").max = maxDepth;
-        renderFullTree();
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            buildLayout();
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        draw();
     </script>
 </body>
 </html>
